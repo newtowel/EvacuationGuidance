@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html>
+<meta charset="utf-8"> 
+<head>
+	<meta name="robot" content="noindex,nofollow">
+	<link rel="manifest" href="./manifest.json">
+	<script>
+	  // service workerが有効なら、service-worker.js を登録します
+	  if ('serviceWorker' in navigator) {
+		navigator.serviceWorker.register('./service-worker.js').then(function() { console.log('Service Worker Registered'); });
+	 }
+	</script>
+	
+	<title>Distance for 3 Sites</title>
+	
+</head>
+<body>
+	<!--地図の全画面表示-->
+	<div id="map" style="height: 100%"></div>
+	<style type="text/css">
+	html, body {
+		height: 100%;
+		margin: 0;
+		padding: 0;
+		}
+	</style>
+	<!--GoogleMaps API, JavaScript(initMap関数)の呼び出し-->
+	<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCKpaHYLKv_npMwHiSKHDSpN0RSKFZrn0s"></script>
+	<script>
+		let directionsService = new google.maps.DirectionsService();
+		
+		if (navigator.geolocation) {
+
+			//その時点の位置情報を1回取得
+			navigator.geolocation.getCurrentPosition(
+				//位置情報データ取得に成功
+				function(position){
+					//現在位置の緯度経度を変数として定義
+					let mapLatLng = new google.maps.LatLng(
+						position.coords.latitude, position.coords.longitude);
+					//表示する地図の追加オプション(デフォルトでのズーム具合、中心座標(今回は現在位置)など)
+					let mapOptions = {
+						zoom: 15,
+						center: mapLatLng
+					};
+					//まとめられた表示すべきルート情報から地図をレンダリング
+					let directionsRenderer = new google.maps.DirectionsRenderer(mapOptions);
+					//基盤となる地図を定義
+					let map = new google.maps.Map(
+						document.getElementById("map"),
+						mapOptions
+					);
+					//地図を表示
+					directionsRenderer.setMap(map);
+					
+					let destinations = ["東京駅", "東京ディズニーランド", "日光東照宮"];
+					let shelter;
+					let distances = [];
+					let i;
+					let request1;
+
+					for (i = 0; i < destinations.length; i++) {
+						request1 = {
+							origin : mapLatLng,
+							destination: destinations[i],
+							travelMode: google.maps.DirectionsTravelMode.WALKING
+						};
+
+						directionsService.route(			
+							request1,
+							function(response, status){
+								if (status == google.maps.DirectionsStatus.OK) {
+									let legs = response.routes[0].legs[0];
+									distances.push(legs.distance.value);
+								}else{
+									alert("ルート検索に失敗しました");
+								}
+							}
+						);
+					}
+
+					console.log(distances);
+					shelter = destinations[distances.indexOf(Math.min.apply(null, distances))];
+
+					console.log(Math.min.apply(null, distances));
+					//ルート表示に向けての基本的な、必要となるデータ(始点・終点・移動手段)
+					let request2 = {
+						origin: mapLatLng,
+						destination: shelter,
+						travelMode: google.maps.TravelMode.WALKING
+					};
+					//(Googleのルートサービスへリクエスト)
+					directionsService.route(
+						request2,
+						function(result, status){
+							//ルート表示のための準備ができていれば(Google側)
+							if (status == google.maps.DirectionsStatus.OK) {
+								//ルート表示
+								directionsRenderer.setDirections(result);
+							}else{
+								alert('ルート表示に失敗しました');
+							}
+						}
+					);
+				},
+				//位置情報の取得に失敗
+				function(error){
+					//各種エラーへの対応(警告)
+					switch(error.code){
+						case 1:
+							alert('位置情報の利用が許可されていません');
+							break;
+						case 2:
+							alert('位置情報が取得できませんでした');
+							break;
+						case 3:
+							alert('タイムアウトになりました');
+							break;
+						default:
+							alert("その他のエラー(エラーコード: "+error.code+")");
+							break;
+					}
+				}
+			);
+		}else{
+			alert('位置情報を取得できません');
+		}		
+	</script>
+</body>
+</html>
