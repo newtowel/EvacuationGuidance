@@ -3,13 +3,14 @@
 <meta charset="utf-8"> 
 <head>
 	<meta name="robot" content="noindex,nofollow">
-	<link rel="manifest" href="./manifest.json">
+	<!--<link rel="manifest" href="./manifest.json">
 	<script>
 	  // service workerが有効なら、service-worker.js を登録します
 	  if ('serviceWorker' in navigator) {
 		navigator.serviceWorker.register('./service-worker.js').then(function() { console.log('Service Worker Registered'); });
 	 }
 	</script>
+	-->
 	
 	<title>Distance for 3 Sites</title>
 	
@@ -26,6 +27,7 @@
 	</style>
 	<!--GoogleMaps API, JavaScript(initMap関数)の呼び出し-->
 	<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCKpaHYLKv_npMwHiSKHDSpN0RSKFZrn0s"></script>
+	<!---->
 	<script>
 		let directionsService = new google.maps.DirectionsService();
 		
